@@ -6,29 +6,29 @@ from pathlib import Path
 
 class Logic(QMainWindow, GreenhouseGUI):
     """
-    Logic class responsible for generating values, converting units, reading and writing
-    files, and beginning UI initialization.
+    The Logic class is responsible for generating values, converting units, reading and writing
+    files, validating input, and beginning UI initialization.
     """
 
-    start_dict = {"prh": 0.0,
-                  "co2": 0,
-                  "temp": {"degrees": 0.0, "unit": "f"},
-                  "light": {"enabled": False, "on_time": 0.0, "off_time": 0.0},
-                  "photo": {"enabled": False, "timer": 0.0}}
+    __start_dict = {"prh": 0.0,
+                    "co2": 0,
+                    "temp": {"degrees": 0.0, "unit": "f"},
+                    "light": {"enabled": False, "on_time": 0.0, "off_time": 0.0},
+                    "photo": {"enabled": False, "timer": 0.0}}
 
     def __init__(self, dec_width, dec_height):
         """
         :param dec_width: Target application width
         :param dec_height: Target application height
         """
+
         super().__init__()
 
-        self.current_unit = None
+        self.__current_unit = None
 
-        self.setFixedWidth(dec_width)
-        self.setFixedHeight(dec_height)
+        self.setFixedSize(dec_width, dec_height)
 
-        # At this point window.geometry.getWidth() would return 640 no matter dec_width, therefore to position
+        # At this point window.geometry.getWidth() would not return dec_width, therefore to position
         # labels relative to window edge we pass these values in explicitly
         self.setupUI(self, dec_width, dec_height)
 
@@ -43,28 +43,37 @@ class Logic(QMainWindow, GreenhouseGUI):
             except json.JSONDecodeError as e:  # Empty / corrupted json, wipe file and rewrite our template
                 settings.seek(0)
                 settings.truncate()
-                json.dump(Logic.start_dict, settings, indent=4)
-                self.data = Logic.start_dict
+                json.dump(Logic.__start_dict, settings, indent=4)
+                self.data = Logic.__start_dict
 
         self.bindings_and_population()
 
-    def bindings_and_population(self):
+    def bindings_and_population(self) -> None:
+        """
+        Binds buttons to functions in Logic and populates fields from settings.json
+        :return: None
+        """
+
         # Populate fields with previous values
         self.humidity_field.setText(str(self.data["prh"]))
+
         self.temp_field.setText(str(self.data["temp"]["degrees"]))
         if self.data["temp"]["unit"] == "c":
             self.temp_c_button.setChecked(True)
-            self.current_unit = "c"
+            self.__current_unit = "c"
         else:
             self.temp_f_button.setChecked(True)
-            self.current_unit = "f"
+            self.__current_unit = "f"
+
         self.co2_field.setText(str(self.data["co2"]))
+
         if self.data["light"]["enabled"]:
             self.light_button.setChecked(True)
             self.light_on_field.setEnabled(True)
             self.light_off_field.setEnabled(True)
         self.light_on_field.setText(str(self.data["light"]["on_time"]))
         self.light_off_field.setText(str(self.data["light"]["off_time"]))
+
         if self.data["photo"]["enabled"]:
             self.photo_button.setChecked(True)
             self.photo_field.setEnabled(True)
@@ -78,8 +87,13 @@ class Logic(QMainWindow, GreenhouseGUI):
         self.photo_button.clicked.connect(self.photo_clicked)
         self.submit_button.clicked.connect(self.submit_clicked)
 
-    def button_use_f(self):
-        if self.current_unit == "f":
+    def button_use_f(self) -> None:
+        """
+        Handles swapping from C to F by changing the current internal unit and converting the value in our field
+        :return: None
+        """
+
+        if self.__current_unit == "f":
             return
 
         try:
@@ -87,15 +101,20 @@ class Logic(QMainWindow, GreenhouseGUI):
         except ValueError:
             return
 
-        self.current_unit = "f"
+        self.__current_unit = "f"
         self.temp_field.setText(f"{Logic.clean_float(c_temp * 9/5 + 32)}")  # Necessary to remove trailing 0's / decimal
 
         # Sanity check to prevent -0
         if self.temp_field.text() == "-0":
             self.temp_field.setText("0")
 
-    def button_use_c(self):
-        if self.current_unit == "c":
+    def button_use_c(self) -> None:
+        """
+        Handles swapping from C to F by changing the current internal unit and converting the value in our field
+        :return: None
+        """
+
+        if self.__current_unit == "c":
             return
 
         try:
@@ -103,14 +122,19 @@ class Logic(QMainWindow, GreenhouseGUI):
         except ValueError:
             return
 
-        self.current_unit = "c"
+        self.__current_unit = "c"
         self.temp_field.setText(f"{Logic.clean_float((c_temp - 32) * 5/9)}")  # Necessary to remove trailing 0's / decimal
 
         # Sanity check to prevent -0
         if self.temp_field.text() == "-0":
             self.temp_field.setText("0")
 
-    def lights_clicked(self):
+    def lights_clicked(self) -> None:
+        """
+        Handle enabling / disable fields when the radio button to enable lights is toggled
+        :return: None
+        """
+
         if self.light_button.isChecked():
             self.light_on_field.setEnabled(True)
             self.light_off_field.setEnabled(True)
@@ -118,7 +142,12 @@ class Logic(QMainWindow, GreenhouseGUI):
             self.light_on_field.setEnabled(False)
             self.light_off_field.setEnabled(False)
 
-    def photo_clicked(self):
+    def photo_clicked(self) -> None:
+        """
+        Handle enabling / disable fields when the radio button to enable lights is toggled
+        :return: None
+        """
+
         if self.photo_button.isChecked():
             self.photo_field.setEnabled(True)
         else:
@@ -134,7 +163,7 @@ class Logic(QMainWindow, GreenhouseGUI):
             self.data["prh"] = float(self.humidity_field.text())
             self.data["co2"] = int(self.co2_field.text())
             self.data["temp"]["degrees"] = Logic.clean_float(self.temp_field.text())
-            self.data["temp"]["unit"] = self.current_unit
+            self.data["temp"]["unit"] = self.__current_unit
             self.data["light"]["enabled"] = self.light_button.isChecked()
             self.data["light"]["on_time"] = Logic.clean_float(self.light_on_field.text())
             self.data["light"]["off_time"] = Logic.clean_float(self.light_off_field.text())
