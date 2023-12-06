@@ -10,6 +10,15 @@ class Logic(QMainWindow, GreenhouseGUI):
     files, validating input, and beginning UI initialization.
     """
 
+    # Some of the functions and things in here are pretty ugly, especially where it comes to
+    # cleaning up flaats, setting fields from numerical types, etc. This is caused by a few
+    # things. PyQt doesn't implicitly convert values passed into setText, so we see a lot of
+    # str() calls with that. Also, floats rounded by python aren't especially pretty to work
+    # with. We see a lot of trailing decimals like 25.0 where it's just not what we want to
+    # display. Therefore, we can convert to float, round, convert back to string to rstrip 0's
+    # and then .'s, and then back to float. Any purely float / fstring approaches have edge
+    # cases where you can end up with a -0, scientific notation, or other undesirable outcomes.
+
     __start_dict = {"prh": 0.0,
                     "co2": 0,
                     "temp": {"degrees": 0.0, "unit": "f"},
@@ -104,10 +113,6 @@ class Logic(QMainWindow, GreenhouseGUI):
         self.__current_unit = "f"
         self.temp_field.setText(f"{Logic.clean_float(c_temp * 9/5 + 32)}")  # Necessary to remove trailing 0's / decimal
 
-        # Sanity check to prevent -0
-        if self.temp_field.text() == "-0":
-            self.temp_field.setText("0")
-
     def button_use_c(self) -> None:
         """
         Handles swapping from C to F by changing the current internal unit and converting the value in our field
@@ -124,10 +129,6 @@ class Logic(QMainWindow, GreenhouseGUI):
 
         self.__current_unit = "c"
         self.temp_field.setText(f"{Logic.clean_float((c_temp - 32) * 5/9)}")  # Necessary to remove trailing 0's / decimal
-
-        # Sanity check to prevent -0
-        if self.temp_field.text() == "-0":
-            self.temp_field.setText("0")
 
     def lights_clicked(self) -> None:
         """

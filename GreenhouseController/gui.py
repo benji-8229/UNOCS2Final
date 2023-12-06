@@ -124,6 +124,7 @@ class GreenhouseGUI(object):
         :param y: Y position of line edit field
         :return:
         """
+
         return_field = QtWidgets.QLineEdit(self.window)
         return_field.setFixedSize(75, GreenhouseGUI.__default_field_height)
         return_field.move(x, y + 30)
