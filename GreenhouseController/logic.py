@@ -178,6 +178,10 @@ class Logic(QMainWindow, GreenhouseGUI):
             self.submit_label.setText("Please submit relative humidity value as a number between 0 and 100")
             return
 
+        if self.data["co2"] < 0:
+            self.submit_label.setText("Please submit a Co2 PPM value greater than 0")
+            return
+
         # Overwrite settings file with new data
         with open("settings.json", "w", encoding='utf-8') as settings:
             json.dump(self.data, settings, indent=4)

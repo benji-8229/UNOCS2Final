@@ -1,7 +1,7 @@
 from PyQt6 import QtWidgets, QtCore, QtGui
 
 
-class GreenhouseGUI(object):
+class GreenhouseGUI:
     """
     GUI controller for greenhouse control unit. Controls creation of labels, text fields, buttons, and dynamically placing them.
     """
