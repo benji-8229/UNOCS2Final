@@ -15,7 +15,7 @@ class Logic(QMainWindow, GreenhouseGUI):
                     "light": {"enabled": False, "on_time": 0.0, "off_time": 0.0},
                     "photo": {"enabled": False, "timer": 0.0}}
 
-    def __init__(self, width, height):
+    def __init__(self, width: int, height: int):
         """
         :param width: Target application width
         :param height: Target application height
