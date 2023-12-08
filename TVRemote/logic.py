@@ -212,7 +212,7 @@ class Logic(QMainWindow, RemoteGUI):
         self.__tv_refresh_state()
         self.TV.show()
 
-    def closeEvent(self, event) -> None:
+    def closeEvent(self, event: Any) -> None:
         """
         Callback event for when a window is closed. Used to clean up the self.TV object
         in case that window is closed
