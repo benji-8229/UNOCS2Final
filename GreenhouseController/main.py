@@ -8,7 +8,7 @@ def main():
     # No matter what order setFixedSize and window.geometry.width() are called in, the latter is not updated
     # from the default until after the application is exec'd
     # When doing this we might as well call setFixedWidth and setFixedHeight from inside Logic class
-    window = Logic(600, 300)
+    window = Logic(550, 250)
     window.setWindowTitle("Greenhouse Control")
     window.show()
     application.exec()
